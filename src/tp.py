@@ -1,18 +1,19 @@
+from __future__ import division
 from scapy.all import *
 import numpy as np
 import sys
 
-global broadcast_counter = 0
-global total_packets = 0
+broadcast_counter = 0
+total_packets = 0
 
 def arp_monitor_callback(pkt):
 	total_packets += 1
 
 	if ARP in pkt and pkt[ARP].op in (1,2): #who-has or is-at
-		if pkt.dst == ff:ff:ff:ff:ff:ff:
+		if pkt.dst == "ff:ff:ff:ff:ff:ff":
 			broadcast_counter += 1
 
-		#ver como mostrar la fuente S
+	print "broadcast: ", broadcast_counter / total_packets, " unicast: ", (total_packets - broadcast_counter) / total_packets
 	
 
 
