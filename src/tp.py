@@ -10,6 +10,7 @@ def arp_monitor_callback(pkt):
 	global total_packets
 	global broadcast_counter
 	
+	pkt.show()
 	total_packets += 1
 
 	if ARP in pkt and pkt[ARP].op in (1,2): #who-has or is-at
