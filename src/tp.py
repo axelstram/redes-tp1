@@ -10,10 +10,10 @@ def arp_monitor_callback(pkt):
 	global total_packets
 	global broadcast_counter
 	
-	pkt.show()
-	total_packets += 1
-
+	
 	if ARP in pkt and pkt[ARP].op in (1,2): #who-has or is-at
+		total_packets += 1
+		
 		if pkt.dst == "ff:ff:ff:ff:ff:ff":
 			broadcast_counter += 1
 
@@ -29,5 +29,6 @@ if __name__ == '__main__':
 		capture = rdpcap(sys.argv[1])
 	else:
 		sniff(prn = arp_monitor_callback, filter = "arp", store = 0)
-
+	
+	arp_monitor_callback(capture)
 	
