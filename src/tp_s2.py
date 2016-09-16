@@ -27,14 +27,15 @@ def arp_monitor_callback(pkt):
 			else:
 				host_dict[pkt.getlayer(ARP).pdst] = 1
 
-		print "broadcast: ", broadcast_counter / total_packets 
+		print "broadcast: ", broadcast_counter / total_packets
+		 
 		for i in host_dict.keys():
 			print i, ": ", host_dict[i] / total_packets
 	
 
 
 
-#toma un diccionario de [ip, #repeticiones]
+#toma un diccionario de [ip, #repeticiones] (por ahi hay que cambiarlo a [ip, probabilidad])
 def entropy(dicc):
     N = float(sum(dicc.values()))
     P = [i/N for i in dicc.values()]
@@ -43,12 +44,17 @@ def entropy(dicc):
     return H
 
 
+
 #toma un diccionario de [ip1, ip2]
 def crear_grafo(dicc):
 	G = nx.Graph()
 
 	for key, value in dicc.iteritems():
-		
+		G.add_edge(key, value)
+	
+	return G	
+
+
 
 
 #Si le paso un argumento, asumo que es una captura en formato libpcap. Sino, sniffeo la red
@@ -63,3 +69,4 @@ if __name__ == '__main__':
 			
 	else:
 		sniff(prn = arp_monitor_callback, filter = "arp", store = 0)
+
