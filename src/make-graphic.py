@@ -41,11 +41,14 @@ if __name__ == '__main__':
 		#https://networkx.github.io/documentation/networkx-1.10/reference/generated/networkx.drawing.nx_pylab.draw_networkx.html#networkx.drawing.nx_pylab.draw_networkx
 		nx.draw(G, pos, 
 			node_size=6000, 
-			node_shape='_', # tratamos de meterle un rectángulo pero no hubo caso --> http://matplotlib.org/api/markers_api.html
+			node_shape='_', # tratamos de meterle un rectangulo pero no hubo caso --> http://matplotlib.org/api/markers_api.html
 			node_color='cyan', 
 			font_size=10, 
 			font_weight='bold', 
 			style='solid',
 			with_labels=True)
-
-		plt.savefig("Graph.png", format="PNG")
+		
+		
+		outfile=sys.argv[1].split('/')[-1].split('.')[0] + ".png"
+		#plt.savefig("Graph.png", format="PNG")
+		plt.savefig(outfile, format="PNG")
