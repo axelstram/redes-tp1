@@ -17,20 +17,15 @@ def arp_monitor_callback(pkt):
 	if ARP in pkt and pkt[ARP].op in (1,2): #who-has or is-at
 		total_packets += 1
 
-		if pkt.dst == "ff:ff:ff:ff:ff:ff":
-			broadcast_counter += 1
+		if pkt.getlayer(ARP).psrc in host_dict.keys():
+			host_dict[pkt.getlayer(ARP).psrc] +=1
 		else:
-			if pkt.getlayer(ARP).pdst in host_dict.keys():
-				host_dict[pkt.getlayer(ARP).pdst] +=1
-			else:
-				host_dict[pkt.getlayer(ARP).pdst] = 1
+			host_dict[pkt.getlayer(ARP).psrc] = 1
 
-		print "broadcast: ", broadcast_counter / total_packets
+		# print "broadcast: ", broadcast_counter / total_packets
 		 
-		for i in host_dict.keys():
-			print i, ": ", host_dict[i] / total_packets
-	
-
+		# for i in host_dict.keys():
+		# 	print i, ": ", host_dict[i] / total_packets
 
 
 #toma un diccionario de [ip, #repeticiones] (por ahi hay que cambiarlo a [ip, probabilidad])
@@ -39,8 +34,9 @@ def entropy(dicc):
     P = [i/N for i in dicc.values()]
     H = sum([p*(-np.log2(p)) for p in P])
 
-    return H
+    print len(dicc.keys())
 
+    return H
 
 
 #toma un diccionario de [ip1, ip2]
