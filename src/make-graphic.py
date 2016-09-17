@@ -49,6 +49,6 @@ if __name__ == '__main__':
 			with_labels=True)
 		
 		
-		outfile=sys.argv[1].split('/')[-1].split('.')[0] + ".png"
+		outfile=sys.argv[1].split('/')[-1].split('.')[0] + ".eps"
 		#plt.savefig("Graph.png", format="PNG")
-		plt.savefig(outfile, format="PNG")
+		plt.savefig(outfile, format="EPS")
