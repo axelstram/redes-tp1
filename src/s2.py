@@ -4,7 +4,6 @@ import numpy as np
 import sys
 import networkx as nx
 
-
 broadcast_counter = 0
 total_packets = 0
 host_dict = {}
@@ -21,7 +20,6 @@ def arp_monitor_callback(pkt):
 		if pkt.dst == "ff:ff:ff:ff:ff:ff":
 			broadcast_counter += 1
 		else:
-			#print pkt.getlayer(ARP).pdst
 			if pkt.getlayer(ARP).pdst in host_dict.keys():
 				host_dict[pkt.getlayer(ARP).pdst] +=1
 			else:
@@ -39,7 +37,7 @@ def arp_monitor_callback(pkt):
 def entropy(dicc):
     N = float(sum(dicc.values()))
     P = [i/N for i in dicc.values()]
-    H = -sum([p*numpy.log2(p) for p in P])
+    H = sum([p*(-np.log2(p)) for p in P])
 
     return H
 
@@ -56,7 +54,6 @@ def crear_grafo(dicc):
 
 
 
-
 #Si le paso un argumento, asumo que es una captura en formato libpcap. Sino, sniffeo la red
 if __name__ == '__main__':
 	capture = []
@@ -66,6 +63,10 @@ if __name__ == '__main__':
 
 		for pkt in capture:
 			arp_monitor_callback(pkt)
+
+		print host_dict
+		print "entropy " 
+		print entropy(host_dict)
 			
 	else:
 		sniff(prn = arp_monitor_callback, filter = "arp", store = 0)
