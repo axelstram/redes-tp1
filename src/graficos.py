@@ -63,21 +63,44 @@ def calcular_informacion(data):
     	cantRepeticiones = data[ip]
     	ipInf[ip] = -np.log2(cantRepeticiones/N)
    	
+   	
+    #me quedo con los 10 de menor informacion (para poder encontrar el gateway)
+	ipInf_sorted_list = sorted(ipInf.items(), key=operator.itemgetter(1)) #sort por value
+	ipInf_sorted_dicc = {}
+
+	for i in range(0, 10):
+		ipInf_sorted_dicc[ipInf_sorted_list[i][0]] = ipInf_sorted_list[i][1]
+	
+	print ipInf_sorted_dicc
+
     return ipInf
    
 
+
+#toma un capture y devuelve un dicc(ip, cant de veces que aparece como src)
 def generar_data_dicc(capture):
 	data = {}
 	
+	for pkt in capture:
+		if ARP in pkt and pkt[ARP].op == 1: #who-has
+			if pkt[ARP].psrc in data.keys():
+				data[pkt[ARP].psrc] += 1
+			else:
+				data[pkt[ARP].psrc] = 1
+
+
 
 	return data
+
+
+
 
 #parametros: captura, titulo
 if __name__ == '__main__':
 	capture = rdpcap(sys.argv[1])
 	titulo = sys.argv[2]
+
 	data = generar_data_dicc(capture)
-	#data = {'192.168.0.1':10, '192.168.0.2':25, '192.168.0.3':13, '192.168.0.4':17, '192.168.0.5':10} #(ip, cant de veces que aparece)
 	informacion = calcular_informacion(data)
-	entropia = calcular_entropia(data)
-	graficar_informacion_y_entropia(informacion, entropia, titulo="")
+	#entropia = calcular_entropia(data)
+	#graficar_informacion_y_entropia(informacion, entropia, titulo="")
