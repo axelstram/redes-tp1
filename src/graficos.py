@@ -6,27 +6,30 @@ import matplotlib.patches as mpatches
 import sys
 import operator
 
+
+fuente = " "
+
+
 #informacion = dicc(ip, informacion)
 #entropia = float
 #titulo = titulo papurro
 def graficar_informacion_y_entropia(informacion, entropia, titulo):
-	sorted_data = sorted(informacion.items(), key=operator.itemgetter(1)) #sort por value
-	ips = []
+	sorted_data = sorted(informacion.items(), key=lambda x:x[1]) #sort por value
+	simbolos = []
 	informacion = []
 
 	for tupla in sorted_data:
-		ips.append(tupla[0])
+		simbolos.append(tupla[0])
 		informacion.append(tupla[1])
 
-
-	plt.xlabel('Direcciones IP')
+	plt.xlabel('Simbolos')
 	plt.ylabel('Informacion')
 	plt.ylim([0, informacion[len(informacion)-1] + 5])
 	plt.tight_layout()
 
 	#grafico informacion
 	plt.bar(range(len(informacion)), informacion, align='center')
-	plt.xticks(range(len(ips)), ips)
+	plt.xticks(range(len(simbolos)), simbolos)
 
 	#grafico entropia
 	entropia_maxima = np.log2(len(informacion))
@@ -81,8 +84,32 @@ def calcular_informacion(data):
    
 
 
+#toma un capture y devuelve un dicc(broadcast/unicast, cant de veces que aparece)
+def generar_data_s(capture):
+	data = {}
+		
+	for pkt in capture:
+
+		if ARP in pkt and pkt[ARP].op in (1,2): #who-has or is-at
+			if pkt.dst == "ff:ff:ff:ff:ff:ff":
+				if 'broadcast' in data.keys():
+					data['broadcast'] += 1
+				else:
+					data['broadcast'] = 1
+			else:
+				if 'unicast' in data.keys():
+					data['unicast'] += 1
+				else:
+					data['unicast'] = 1
+	
+
+	return data
+
+
+
+
 #toma un capture y devuelve un dicc(ip, cant de veces que aparece como src)
-def generar_data_dicc(capture):
+def generar_data_s1(capture):
 	data = {}
 	
 	for pkt in capture:
@@ -101,8 +128,14 @@ def generar_data_dicc(capture):
 if __name__ == '__main__':
 	capture = rdpcap(sys.argv[1])
 	titulo = sys.argv[2]
-	
-	data = generar_data_dicc(capture)
+	fuente = sys.argv[3]
+	data = {}
+
+	if fuente == 's':
+		data = generar_data_s(capture)
+	else:
+		data = generar_data_s1(capture)
+
 	informacion = calcular_informacion(data)
 	entropia = calcular_entropia(data)
 	graficar_informacion_y_entropia(informacion, entropia, titulo="")
