@@ -6,8 +6,6 @@ import matplotlib.patches as mpatches
 import sys
 import operator
 
-
-
 #informacion = dicc(ip, informacion)
 #entropia = float
 #titulo = titulo papurro
@@ -56,24 +54,30 @@ def calcular_entropia(data):
 
 #data = dicc(ip, #repeticiones)
 def calcular_informacion(data):
-    N = float(sum(data.values()))
-    ipInf = {}
+	N = float(sum(data.values()))
+	ipInf = {}
+    	
+	for ip, cantRepeticiones in data.items():
+		ipInf[str(ip)] = -np.log2(cantRepeticiones/N)
 
-    for ip in data.keys():
-    	cantRepeticiones = data[ip]
-    	ipInf[ip] = -np.log2(cantRepeticiones/N)
-   	
-   	
-    #me quedo con los 10 de menor informacion (para poder encontrar el gateway)
-	ipInf_sorted_list = sorted(ipInf.items(), key=operator.itemgetter(1)) #sort por value
+	#print ipInf
+	#me quedo con los 10 de menor informacion (para poder encontrar el gateway)
+	ipInf_sorted_list = sorted(ipInf.items(), key=lambda x:x[1]) #sort por value
 	ipInf_sorted_dicc = {}
-
-	for i in range(0, 10):
-		ipInf_sorted_dicc[ipInf_sorted_list[i][0]] = ipInf_sorted_list[i][1]
 	
-	print ipInf_sorted_dicc
+	#print ipInf_sorted_list
+	i = 0
+	for t in ipInf_sorted_list:
+		if i < min(10, len(ipInf_sorted_list)):
+			ipInf_sorted_dicc[str(t[0])] = t[1]
+		else:
+			break
 
-    return ipInf
+		i += 1
+
+	#print ipInf_sorted_dicc
+
+	return ipInf_sorted_dicc
    
 
 
@@ -88,8 +92,6 @@ def generar_data_dicc(capture):
 			else:
 				data[pkt[ARP].psrc] = 1
 
-
-
 	return data
 
 
@@ -99,8 +101,8 @@ def generar_data_dicc(capture):
 if __name__ == '__main__':
 	capture = rdpcap(sys.argv[1])
 	titulo = sys.argv[2]
-
+	
 	data = generar_data_dicc(capture)
 	informacion = calcular_informacion(data)
-	#entropia = calcular_entropia(data)
-	#graficar_informacion_y_entropia(informacion, entropia, titulo="")
+	entropia = calcular_entropia(data)
+	graficar_informacion_y_entropia(informacion, entropia, titulo="")
