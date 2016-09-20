@@ -22,15 +22,6 @@ def crear_dicc(capture):
 					connections[pkt_src] = {pkt_dst: 1}
 	return connections
 
-#toma un diccionario de [ip1, ip2]
-def crear_grafo(dicc):
-	G = nx.DiGraph()
-
-	for src in dicc.keys():
-		for dst in dicc[src].keys():
-			G.add_edge(src, dst)
-	return G
-
 # MAIN
 if __name__ == '__main__':
 	capture = []
@@ -39,21 +30,17 @@ if __name__ == '__main__':
 		capture = rdpcap(sys.argv[1])
 
 		dicc = crear_dicc(capture)
-		G = crear_grafo(dicc)
 
-		# pos = nx.spring_layout(G)
-		d = nx.degree(G)
-
-		nx.draw_graph(G, 
-			nodelist=d.keys(), 
-			node_size=[v * 100 for v in d.values()], 
-			node_shape='o',
-			arrows=True,
-			node_color='cyan', 
-			font_size=10, 
-			font_weight='bold', 
-			style='solid',
-			with_labels=False)
-		
 		outfile=sys.argv[1].split('/')[-1].split('.')[0] + ".eps"
-		plt.savefig(outfile, format="EPS")
+
+		f = file('dot/{0}.dot'.format(outfile), 'w')
+
+		f.write('digraph G {\n')
+
+		for src in dicc.keys():
+			for dst in dicc[src].keys():
+				edge = '	"{0}"->"{1}" [color="#1E1EA8"];\n'.format(src, dst)
+				f.write(edge)
+
+		f.write('}')
+
