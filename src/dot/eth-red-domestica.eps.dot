@@ -25,6 +25,6 @@ digraph G {
 	"192.168.0.100"->"192.168.0.101" [color="#1E1EA8"];
 	"192.168.0.108"->"192.168.0.1" [color="#1E1EA8"];
 	"192.168.0.108"->"192.168.0.108" [color="#1E1EA8"];
-	"192.168.0.1" [shape=circle,width=1.50,fontname=Verdana,style=filled,fillcollor="#BFC1F2",color="#BFC1F2",label="172.16.0.1"];
-	"10.42.0.1" [shape=circle,width=1.50,fontname=Verdana,style=filled,fillcollor="#BFC1F2",color="#BFC1F2",label="172.16.0.1"];
+	"192.168.0.1" [shape=circle,width=1.50,fontname=Verdana,style=filled,fillcollor="#BFC1F2",color="#BFC1F2",label="192.168.0.1"];
+	"10.42.0.1" [shape=circle,width=1.50,fontname=Verdana,style=filled,fillcollor="#BFC1F2",color="#BFC1F2",label="10.42.0.1"];
 }
