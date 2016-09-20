@@ -41,7 +41,8 @@ def graficar_informacion_y_entropia(informacion, entropia, titulo):
 	plt.plot([-1] + range(len(informacion)) + [len(informacion)], [entropia_maxima]*(len(informacion)+2), linewidth=3.0, color='green')	 
 
 	plt.show()
-	plt.savefig(titulo) 
+	outfile = titulo.split('/')[-1].split('.')[0] + ".eps"
+	plt.savefig(outfile, format='EPS') 
 
 
 
