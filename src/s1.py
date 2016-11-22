@@ -6,26 +6,32 @@ import networkx as nx
 
 broadcast_counter = 0
 total_packets = 0
-host_dict = {}
+nodos_distinguidos = {}
 
 def arp_monitor_callback(pkt):
 	global total_packets
 	global broadcast_counter
-	global host_dict 
-	
-	
-	if ARP in pkt and pkt[ARP].op in (1,2): #who-has or is-at
-		total_packets += 1
+	global nodos_distinguidos 
 
-		if pkt.getlayer(ARP).psrc in host_dict.keys():
-			host_dict[pkt.getlayer(ARP).psrc] +=1
+	total_packets += 1
+
+	if ARP in pkt and pkt[ARP].op == whoHasORisAt: #who-has or is-at
+
+		if hostORdest == 1:			
+			if pkt.getlayer(ARP).psrc in nodos_distinguidos.keys():
+				nodos_distinguidos[pkt.getlayer(ARP).psrc] +=1
+			else:
+				nodos_distinguidos[pkt.getlayer(ARP).psrc] = 1
 		else:
-			host_dict[pkt.getlayer(ARP).psrc] = 1
+			if pkt.getlayer(ARP).pdst in nodos_distinguidos.keys():
+				nodos_distinguidos[pkt.getlayer(ARP).pdst] +=1
+			else:
+				nodos_distinguidos[pkt.getlayer(ARP).pdst] = 1
 
 		# print "broadcast: ", broadcast_counter / total_packets
 		 
-		# for i in host_dict.keys():
-		# 	print i, ": ", host_dict[i] / total_packets
+		# for i in nodos_distinguidos.keys():
+		# 	print i, ": ", nodos_distinguidos[i] / total_packets
 
 
 #toma un diccionario de [ip, #repeticiones] (por ahi hay que cambiarlo a [ip, probabilidad])
@@ -46,11 +52,18 @@ def crear_grafo(dicc):
 	
 	return G	
 
-
+# GLOBAL VARIABLES
+whoHasORisAt = 1
+hostORdest = 1
 
 #Si le paso un argumento, asumo que es una captura en formato libpcap. Sino, sniffeo la red
 if __name__ == '__main__':
 	capture = []
+
+	# who-has or is-at
+	whoHasORisAt= int(raw_input("Who-Has (1) or Is-At(2)?: "))
+	# host or dest
+	hostORdest= int(raw_input("Host (1) or Dest(2)?: "))
 
 	if len(sys.argv) > 1:
 		capture = rdpcap(sys.argv[1])
@@ -58,9 +71,9 @@ if __name__ == '__main__':
 		for pkt in capture:
 			arp_monitor_callback(pkt)
 
-		print host_dict
+		print nodos_distinguidos
 		print "entropy " 
-		print entropy(host_dict)
+		print entropy(nodos_distinguidos)
 			
 	else:
 		sniff(prn = arp_monitor_callback, filter = "arp", store = 0)
