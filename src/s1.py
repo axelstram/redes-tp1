@@ -13,9 +13,10 @@ def arp_monitor_callback(pkt):
 	global broadcast_counter
 	global nodos_distinguidos 
 
-	total_packets += 1
-
+	#total_packets += 1
 	if ARP in pkt and pkt[ARP].op == whoHasORisAt: #who-has or is-at
+		# Lo pase adentro porque no vamos a tener en cuenta sobre el total los paquetes de otros tipos para calcular Entropia
+		total_packets += 1
 
 		if hostORdest == 1:			
 			if pkt.getlayer(ARP).psrc in nodos_distinguidos.keys():
@@ -36,11 +37,21 @@ def arp_monitor_callback(pkt):
 
 #toma un diccionario de [ip, #repeticiones] (por ahi hay que cambiarlo a [ip, probabilidad])
 def entropy(dicc):
+    l = []
     N = float(sum(dicc.values()))
     P = [i/N for i in dicc.values()]
+	# genera una lista de tuplas (informacion, ip) para poderla ordenar y devolverla
+    j = 0
+    for i,k in dicc.iteritems():
+	l.append((-np.log2(P[j]), i))
+	j +=1
+	
+    l.sort()
+
+    #I = [-np.log2(p) for p in P]
     H = sum([p*(-np.log2(p)) for p in P])
 
-    return H
+    return [H, l]
 
 
 #toma un diccionario de [ip1, ip2]
@@ -71,9 +82,16 @@ if __name__ == '__main__':
 		for pkt in capture:
 			arp_monitor_callback(pkt)
 
-		print nodos_distinguidos
+		# Al pedo
+		# print nodos_distinguidos
+		[e, i] = entropy(nodos_distinguidos)
 		print "entropy " 
-		print entropy(nodos_distinguidos)
+		print e
+		# Imprime los 5 con menos informacion
+		print "information "
+		print i[0:5]
+		# Imprime el que tiene mas informacion para comparar porcentajes
+		print i[len(i)-1]
 			
 	else:
 		sniff(prn = arp_monitor_callback, filter = "arp", store = 0)
