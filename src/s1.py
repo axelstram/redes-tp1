@@ -3,6 +3,7 @@ from scapy.all import *
 import numpy as np
 import sys
 import networkx as nx
+from netaddr import *
 
 broadcast_counter = 0
 total_packets = 0
@@ -92,6 +93,28 @@ if __name__ == '__main__':
 		print i[0:5]
 		# Imprime el que tiene mas informacion para comparar porcentajes
 		print i[len(i)-1]
+
+
+		dist = []
+		non_dist = []
+		for nodo in i:
+			if nodo[0] < e:
+				dist.append(nodo)
+			else:
+				non_dist.append(nodo)
+		print "Distinguidos"
+		print dist
+		# Crea una lista de IPaddress de non_dist
+		ip_addr = [IPAddress(i) for i in [seq[1] for seq in non_dist]]
+
+		#merged = cidr_merge(ip_addr)
+		#print "Nodos no distinguidos sumarizados"
+		#print merged
+
+		# Para generar las /24
+		# cidr = IPNetwork('.'.join(str(ip).split('.')[0:3]) + '.0/24')
+
+		
 			
 	else:
 		sniff(prn = arp_monitor_callback, filter = "arp", store = 0)
