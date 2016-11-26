@@ -7,34 +7,44 @@ from netaddr import *
 
 broadcast_counter = 0
 total_packets = 0
-nodos_distinguidos = {}
+nodos = {}
+
+connections = {} #dic{src: [dst] } o #dic{dst: [src] } depende el modo que se elija
 
 def arp_monitor_callback(pkt):
 	global total_packets
 	global broadcast_counter
-	global nodos_distinguidos 
+	global nodos 
 
-	#total_packets += 1
 	if ARP in pkt and pkt[ARP].op == whoHasORisAt: #who-has or is-at
-		# Lo pase adentro porque no vamos a tener en cuenta sobre el total los paquetes de otros tipos para calcular Entropia
 		total_packets += 1
 
-		if hostORdest == 1:			
-			if pkt.getlayer(ARP).psrc in nodos_distinguidos.keys():
-				nodos_distinguidos[pkt.getlayer(ARP).psrc] +=1
-			else:
-				nodos_distinguidos[pkt.getlayer(ARP).psrc] = 1
+		if hostORdest == 1:
+			agregarADiccNodos(pkt.getlayer(ARP).psrc)
+			agregarADiccConnections(pkt.getlayer(ARP).psrc, pkt.getlayer(ARP).pdst)
 		else:
-			if pkt.getlayer(ARP).pdst in nodos_distinguidos.keys():
-				nodos_distinguidos[pkt.getlayer(ARP).pdst] +=1
-			else:
-				nodos_distinguidos[pkt.getlayer(ARP).pdst] = 1
+			agregarADiccNodos(pkt.getlayer(ARP).pdst)
+			agregarADiccConnections(pkt.getlayer(ARP).pdst, pkt.getlayer(ARP).psrc)
 
 		# print "broadcast: ", broadcast_counter / total_packets
 		 
-		# for i in nodos_distinguidos.keys():
-		# 	print i, ": ", nodos_distinguidos[i] / total_packets
+		# for i in nodos.keys():
+		# 	print i, ": ", nodos[i] / total_packets
 
+def agregarADiccNodos(host):
+	if host in nodos.keys():
+		nodos[host] +=1
+	else:
+		nodos[host] = 1
+
+def agregarADiccConnections(host, host_connection):
+	if host in connections.keys():
+		nodos[host].append(host_connection)
+	else:
+		nodos[host] = [host_connection]
+
+def groupConnectionsByNetwork(host_connections):
+	#ToDo
 
 #toma un diccionario de [ip, #repeticiones] (por ahi hay que cambiarlo a [ip, probabilidad])
 def entropy(dicc):
@@ -52,17 +62,7 @@ def entropy(dicc):
     #I = [-np.log2(p) for p in P]
     H = sum([p*(-np.log2(p)) for p in P])
 
-    return [H, l]
-
-
-#toma un diccionario de [ip1, ip2]
-def crear_grafo(dicc):
-	G = nx.Graph()
-
-	for key, value in dicc.iteritems():
-		G.add_edge(key, value)
-	
-	return G	
+    return [H, l]	
 
 # GLOBAL VARIABLES
 whoHasORisAt = 1
@@ -84,8 +84,8 @@ if __name__ == '__main__':
 			arp_monitor_callback(pkt)
 
 		# Al pedo
-		# print nodos_distinguidos
-		[e, i] = entropy(nodos_distinguidos)
+		# print nodos
+		[e, i] = entropy(nodos)
 		print "entropy " 
 		print e
 		# Imprime los 5 con menos informacion
@@ -114,6 +114,18 @@ if __name__ == '__main__':
 		# Para generar las /24
 		# cidr = IPNetwork('.'.join(str(ip).split('.')[0:3]) + '.0/24')
 
+
+		#dicc {red}: #veces que se conecta <--
+		#[hosts] ---> [redes] 
+
+
+		for host, host_connections in connections.iteritems():
+			if host in dist: #si el host es distinguido
+				#modificar las conecciones a host por conecciones a redes
+				connections[host] = groupConnectionsByNetwork(host_connections)
+			else:
+				#eliminar la clave del diccionario
+				connections.pop(host, None)
 		
 			
 	else:
