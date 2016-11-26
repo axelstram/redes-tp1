@@ -68,6 +68,38 @@ def entropy(dicc):
 whoHasORisAt = 1
 hostORdest = 1
 
+# Funcion para generar un diccionario de redes sumarizadas con cantidad de nodos que la componen
+def gen_dict_sumarizadas(dicc):
+
+	redes = {}
+	#for ip in ip_addr:
+	for ip in dicc:
+		cidr = IPNetwork('.'.join(str(ip).split('.')[0:3]) + '.0/24')
+		if cidr not in redes.keys():
+			redes[cidr] = 1
+		else:
+			redes[cidr] += 1
+	#print redes
+	# Para sumarizar
+	redes_l = []
+	nodos_cant_l = []
+	for r, s in redes.iteritems():
+		redes_l.append(r)
+		nodos_cant_l.append(s)
+	redes_sum = cidr_merge(redes_l)
+	#print "Redes Sumarizadas"
+	#print redes_sum
+	# Para generar el diccionario con cantidad de hosts por sumarizada
+	dicc_sum = {}
+	for r in redes_l:
+		for sn in redes_sum:
+			if r in sn:
+				if sn not in dicc_sum:
+					dicc_sum[sn] = nodos_cant_l[redes_l.index(r)]
+				else:
+					dicc_sum[sn] += nodos_cant_l[redes_l.index(r)]
+	return dicc_sum
+				
 #Si le paso un argumento, asumo que es una captura en formato libpcap. Sino, sniffeo la red
 if __name__ == '__main__':
 	capture = []
@@ -89,12 +121,13 @@ if __name__ == '__main__':
 		print "entropy " 
 		print e
 		# Imprime los 5 con menos informacion
-		print "information "
-		print i[0:5]
+		#print "information "
+		#print i[0:5]
 		# Imprime el que tiene mas informacion para comparar porcentajes
-		print i[len(i)-1]
+		#print i[len(i)-1]
 
 
+		# Listas de distinguidos vs no distinguidos
 		dist = []
 		non_dist = []
 		for nodo in i:
@@ -107,12 +140,10 @@ if __name__ == '__main__':
 		# Crea una lista de IPaddress de non_dist
 		ip_addr = [IPAddress(i) for i in [seq[1] for seq in non_dist]]
 
-		#merged = cidr_merge(ip_addr)
-		#print "Nodos no distinguidos sumarizados"
-		#print merged
-
-		# Para generar las /24
-		# cidr = IPNetwork('.'.join(str(ip).split('.')[0:3]) + '.0/24')
+		print "Redes Sumarizadas con cantidad de nodos:"
+		print gen_dict_sumarizadas(ip_addr)
+					
+		
 
 
 		#dicc {red}: #veces que se conecta <--
