@@ -21,10 +21,10 @@ def arp_monitor_callback(pkt):
 
 		if hostORdest == 1:
 			agregarADiccNodos(pkt.getlayer(ARP).psrc)
-			agregarADiccConnections(pkt.getlayer(ARP).psrc, pkt.getlayer(ARP).pdst)
+			#agregarADiccConnections(pkt.getlayer(ARP).psrc, pkt.getlayer(ARP).pdst)
 		else:
 			agregarADiccNodos(pkt.getlayer(ARP).pdst)
-			agregarADiccConnections(pkt.getlayer(ARP).pdst, pkt.getlayer(ARP).psrc)
+			#agregarADiccConnections(pkt.getlayer(ARP).pdst, pkt.getlayer(ARP).psrc)
 
 		# print "broadcast: ", broadcast_counter / total_packets
 		 
@@ -33,18 +33,19 @@ def arp_monitor_callback(pkt):
 
 def agregarADiccNodos(host):
 	if host in nodos.keys():
-		nodos[host] +=1
+		nodos[host] += 1
 	else:
 		nodos[host] = 1
 
 def agregarADiccConnections(host, host_connection):
 	if host in connections.keys():
-		nodos[host].append(host_connection)
+		connections[host].append(host_connection)
 	else:
-		nodos[host] = [host_connection]
+		connections[host] = [host_connection]
 
 def groupConnectionsByNetwork(host_connections):
 	#ToDo
+	asd = "asd"
 
 #toma un diccionario de [ip, #repeticiones] (por ahi hay que cambiarlo a [ip, probabilidad])
 def entropy(dicc):
