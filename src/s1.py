@@ -3,13 +3,14 @@ from scapy.all import *
 import numpy as np
 import sys
 import networkx as nx
+import matplotlib.pyplot as plt
 from netaddr import *
 
 broadcast_counter = 0
 total_packets = 0
-nodos = {}
+nodos = {} #{host: cant de apariciones}
 
-connections = {} #dic{src: [dst] } o #dic{dst: [src] } depende el modo que se elija
+connections = {} #{src: [dst] } o {dst: [src] } depende el modo que se elija
 
 def arp_monitor_callback(pkt):
 	global total_packets
@@ -25,11 +26,6 @@ def arp_monitor_callback(pkt):
 		else:
 			agregarADiccNodos(pkt.getlayer(ARP).pdst)
 			agregarADiccConnections(pkt.getlayer(ARP).pdst, pkt.getlayer(ARP).psrc)
-
-		# print "broadcast: ", broadcast_counter / total_packets
-		 
-		# for i in nodos.keys():
-		# 	print i, ": ", nodos[i] / total_packets
 
 def agregarADiccNodos(host):
 	if host in nodos.keys():
@@ -58,22 +54,24 @@ def groupConnectionsByNetwork(redes, host_connections):
 	return networks_connections
 
 #toma un diccionario de [ip, #repeticiones] (por ahi hay que cambiarlo a [ip, probabilidad])
-def entropy(dicc):
-    l = []
-    N = float(sum(dicc.values()))
-    P = [i/N for i in dicc.values()]
-	# genera una lista de tuplas (informacion, ip) para poderla ordenar y devolverla
-    j = 0
-    for i,k in dicc.iteritems():
-	l.append((-np.log2(P[j]), i))
-	j +=1
+def entropy(nodos):
+	informacionPorNodo = []
+	N = float(sum(nodos.values())) #N= cantidad total de paquetes 'interesantes'
+
+	probabilidad = {} # {host: probabilidad}
+
+	for host, apariciones in nodos.iteritems():
+		probabilidad[host] = apariciones/N
+		informacion = -np.log2(probabilidad[host])
+		informacionPorNodo.append((host, informacion))
 	
-    l.sort()
+	# Sort en base al segundo parametro
+	informacionPorNodo.sort(key=lambda n: n[1]) 
 
-    #I = [-np.log2(p) for p in P]
-    H = sum([p*(-np.log2(p)) for p in P])
+	# H = entropia = suma de informaciones (informacion = -log2(probabilidad))
+	H = sum([p*(-np.log2(p)) for host, p in probabilidad.iteritems()])
 
-    return [H, l]	
+	return [H, informacionPorNodo]
 
 # GLOBAL VARIABLES
 whoHasORisAt = 1
@@ -81,7 +79,7 @@ hostORdest = 1
 
 # Funcion para generar un diccionario de redes sumarizadas con cantidad de nodos que la componen
 def sumarizar_redes(non_dist):
-	ip_addr = [IPAddress(i) for i in [seq[1] for seq in non_dist]]
+	ip_addr = [IPAddress(i) for i in [seq[0] for seq in non_dist]]
 
 	redes = {}
 	for ip in ip_addr:
@@ -116,7 +114,7 @@ def dividir_nodos(entropia, informacionPorNodo):
 	dist = []
 	non_dist = []
 	for nodo in informacionPorNodo:
-		if nodo[0] < math.ceil(entropia)/2:
+		if nodo[1] < math.ceil(entropia)/2:
 			dist.append(nodo)
 		else:
 			non_dist.append(nodo)
@@ -152,11 +150,20 @@ if __name__ == '__main__':
 
 		# DISTINCION DE NODOS
 		[dist, non_dist] = dividir_nodos(entropia, informacionPorNodo)
-		print "Nodos distinguidos: ", [d[1] for d in dist]
+		
+		resp = raw_input("Imprimir informacion de cada nodo distinguido? (s o n): ")
+		if 's' in resp:
+			print "Nodos distinguidos: ", dist
+		else:
+			print "Nodos distinguidos: ", [n[0] for n in dist]
 
 		resp = raw_input("Imprimir nodos NO distinguidos? (s o n): ")
 		if 's' in resp:
-			print non_dist
+			resp = raw_input("Imprimir informacion de cada nodo NO distinguido? (s o n): ")
+			if 's' in resp:
+				print "Nodos NO distinguidos: ", non_dist
+			else:
+				print "Nodos NO distinguidos: ", [n[0] for n in non_dist]
 		print "...................................................."
 
 		# SUMARIZAR POR REDES LOS NO DISTINGUIDOS
@@ -169,7 +176,7 @@ if __name__ == '__main__':
 
 		print "Creando diccionario de nodos distinguidos y sus conecciones: "
 		dist_connections = {}
-		nodos_distinguidos= [d[1] for d in dist]
+		nodos_distinguidos= [d[0] for d in dist]
 
 		for host, host_connections in connections.iteritems():
 			if host in nodos_distinguidos:
