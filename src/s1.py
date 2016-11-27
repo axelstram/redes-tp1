@@ -21,10 +21,10 @@ def arp_monitor_callback(pkt):
 
 		if hostORdest == 1:
 			agregarADiccNodos(pkt.getlayer(ARP).psrc)
-			#agregarADiccConnections(pkt.getlayer(ARP).psrc, pkt.getlayer(ARP).pdst)
+			agregarADiccConnections(pkt.getlayer(ARP).psrc, pkt.getlayer(ARP).pdst)
 		else:
 			agregarADiccNodos(pkt.getlayer(ARP).pdst)
-			#agregarADiccConnections(pkt.getlayer(ARP).pdst, pkt.getlayer(ARP).psrc)
+			agregarADiccConnections(pkt.getlayer(ARP).pdst, pkt.getlayer(ARP).psrc)
 
 		# print "broadcast: ", broadcast_counter / total_packets
 		 
@@ -43,9 +43,19 @@ def agregarADiccConnections(host, host_connection):
 	else:
 		connections[host] = [host_connection]
 
-def groupConnectionsByNetwork(host_connections):
-	#ToDo
-	asd = "asd"
+def groupConnectionsByNetwork(redes, host_connections):
+	networks_connections = []
+
+	for host in host_connections:
+		ip = IPAddress(host)
+
+		for red, veces in redes.iteritems():
+			if ip in red:
+				if red not in networks_connections:
+					networks_connections.append(red)
+				break
+
+	return networks_connections
 
 #toma un diccionario de [ip, #repeticiones] (por ahi hay que cambiarlo a [ip, probabilidad])
 def entropy(dicc):
@@ -70,11 +80,11 @@ whoHasORisAt = 1
 hostORdest = 1
 
 # Funcion para generar un diccionario de redes sumarizadas con cantidad de nodos que la componen
-def gen_dict_sumarizadas(dicc):
+def sumarizar_redes(non_dist):
+	ip_addr = [IPAddress(i) for i in [seq[1] for seq in non_dist]]
 
 	redes = {}
-	#for ip in ip_addr:
-	for ip in dicc:
+	for ip in ip_addr:
 		cidr = IPNetwork('.'.join(str(ip).split('.')[0:3]) + '.0/24')
 		if cidr not in redes.keys():
 			redes[cidr] = 1
@@ -91,15 +101,28 @@ def gen_dict_sumarizadas(dicc):
 	#print "Redes Sumarizadas"
 	#print redes_sum
 	# Para generar el diccionario con cantidad de hosts por sumarizada
-	dicc_sum = {}
+	redes_sumarizadas = {}
 	for r in redes_l:
 		for sn in redes_sum:
 			if r in sn:
-				if sn not in dicc_sum:
-					dicc_sum[sn] = nodos_cant_l[redes_l.index(r)]
+				if sn not in redes_sumarizadas:
+					redes_sumarizadas[sn] = nodos_cant_l[redes_l.index(r)]
 				else:
-					dicc_sum[sn] += nodos_cant_l[redes_l.index(r)]
-	return dicc_sum
+					redes_sumarizadas[sn] += nodos_cant_l[redes_l.index(r)]
+	return redes_sumarizadas
+
+def dividir_nodos(entropia, informacionPorNodo):
+	# Listas de distinguidos vs no distinguidos
+	dist = []
+	non_dist = []
+	for nodo in informacionPorNodo:
+		if nodo[0] < math.ceil(entropia)/2:
+			dist.append(nodo)
+		else:
+			non_dist.append(nodo)
+
+	return [dist, non_dist]
+
 				
 #Si le paso un argumento, asumo que es una captura en formato libpcap. Sino, sniffeo la red
 if __name__ == '__main__':
@@ -110,56 +133,54 @@ if __name__ == '__main__':
 	# host or dest
 	hostORdest= int(raw_input("Host (1) or Dest(2)?: "))
 
+	print "...................................................."
+
 	if len(sys.argv) > 1:
+		print "Analizando captura"
 		capture = rdpcap(sys.argv[1])
 
 		for pkt in capture:
 			arp_monitor_callback(pkt)
 
-		# Al pedo
-		# print nodos
-		[e, i] = entropy(nodos)
-		print "entropy " 
-		print e
-		# Imprime los 5 con menos informacion
-		#print "information "
-		#print i[0:5]
-		# Imprime el que tiene mas informacion para comparar porcentajes
-		#print i[len(i)-1]
+		print "...................................................."
 
+		# ENTROPIA
+		[entropia, informacionPorNodo] = entropy(nodos)
+		print "La entropia de la fuente es: "
+		print entropia
+		print "...................................................."
 
-		# Listas de distinguidos vs no distinguidos
-		dist = []
-		non_dist = []
-		for nodo in i:
-			if nodo[0] < e:
-				dist.append(nodo)
-			else:
-				non_dist.append(nodo)
-		print "Distinguidos"
-		print dist
-		# Crea una lista de IPaddress de non_dist
-		ip_addr = [IPAddress(i) for i in [seq[1] for seq in non_dist]]
+		# DISTINCION DE NODOS
+		[dist, non_dist] = dividir_nodos(entropia, informacionPorNodo)
+		print "Nodos distinguidos: ", [d[1] for d in dist]
 
-		print "Redes Sumarizadas con cantidad de nodos:"
-		print gen_dict_sumarizadas(ip_addr)
-					
-		
+		resp = raw_input("Imprimir nodos NO distinguidos? (s o n): ")
+		if 's' in resp:
+			print non_dist
+		print "...................................................."
 
+		# SUMARIZAR POR REDES LOS NO DISTINGUIDOS
+		redes = {}
+		sumarize = raw_input("Sumarizar redes en los nodos no distinguidos? (s o n): ")
+		if 's' in sumarize:
+			redes = sumarizar_redes(non_dist)
+			print "Redes con cantidad de hits: ", redes
+		print "...................................................."
 
-		#dicc {red}: #veces que se conecta <--
-		#[hosts] ---> [redes] 
-
+		print "Creando diccionario de nodos distinguidos y sus conecciones: "
+		dist_connections = {}
+		nodos_distinguidos= [d[1] for d in dist]
 
 		for host, host_connections in connections.iteritems():
-			if host in dist: #si el host es distinguido
-				#modificar las conecciones a host por conecciones a redes
-				connections[host] = groupConnectionsByNetwork(host_connections)
-			else:
-				#eliminar la clave del diccionario
-				connections.pop(host, None)
+			if host in nodos_distinguidos:
+				if 's' in sumarize:
+					dist_connections[host] = groupConnectionsByNetwork(redes, host_connections)
+				else:
+					dist_connections[host] = host_connections
+
+		print dist_connections
+		print "...................................................."
 		
 			
 	else:
 		sniff(prn = arp_monitor_callback, filter = "arp", store = 0)
-
