@@ -1,0 +1,33 @@
+\section{Introducción}
+
+
+%El objetivo de este trabajo es analizar diversos aspectos de una red como su topología, y otros aspectos más teóricos como la entropía y la información de cada nodo. Para realizar este análisis modelamos los paquetes capturados como dos fuentes de memoria nula $S$ y $S1$, las cuáles tienen como símbolos los paquetes ARP broadcast y unicast, en el caso de $S$, y las direcciones IP de destino de estos paquetes en el caso de $S2$.
+
+El objetivo del presente trabajo es descubrir la topología de distintas redes utilizando captura de paquetes ARP. Para la clasificación de los datos así obtenidos se modelaran por cada red dos fuentes de memoria nula, que identificaremos como $S$ y $S1$. Para las fuentes $S$ se distinguirán los paquetes broadcast vs. los paquetes unicast y para las fuentes $S1$ los símbolos se distinguirán basados en las direcciones IP de los orígenes de los paquetes.
+
+ARP es un protocolo de capa 2.5 que se encarga de traducir direcciones IP (Nivel de red) a direcciones físicas de los dispositivos o ''MAC addresses'' (Nivel de Enlace). Este protocolo distingue dos tipos de mensajes, ''Who has'' y ''Is At''.
+''Who has'' son típicamente mensajes de ''pedido'' (request) enviados a toda la red (Broadcast) preguntando a los dispositivos, identificados por MAC address, quién poseé cierta dirección IP.
+''Is At'' son mensajes de ''respuesta'' (reply) enviados a un sólo nodo (unicast) que es el nodo que efectuó el pedido, indicando que el dispositivo con la IP buscada se encuentra en la dirección física que envia la respuesta.
+
+Un dispositivo comunicándose en una red a nivel capa de enlace, necesita conocer la dirección MAC del dispositivo con el que desea comunicarse, pero el protocolo IP utiliza direccionamiento por dirección IP. Para traducir de un tipo de direccionamiento al otro de manera eficiente, los dispositivos mantienen una tabla ARP que ''cachea'' la información. Estas tablas ARP son actualizadas cada cierto tiempo, lo que genera los mensajes de protocolo ARP que capturaremos.
+
+La distinción entre tipos de paquetes que soporta el protocolo ARP nos conduce de forma natural a la primera distinción entre símbolos que utilizaremos para modelar la fuente $S$, que distinguirá entre paquetes de tipo Broadcast y paquetes de tipo Unicast.
+
+
+Para el modelado de la fuente $S1$ el criterio de distinción entre los símbolos de la fuente se justifica  matemáticamente de acuerdo a la cantidad de información que cada símbolo trae aparejado y su comparación con la entropía total del sistema.
+
+La cantidad de información que aporta un evento $E$ que ocurre con probabilidad $P(E)$ se define como 
+\[I(E) = log \frac{1}{P(E)}\]
+
+Para calcular la cantidad promedio de información de una fuente de memoria nula $S$, tenemos que cuando el simbolo $s_i$ ocurre, obtenemos una cantidad de información 
+\[I(s_i) = log \frac{1}{P(s_i)}\]
+y la probabilidad de que esto ocurra es directamente $P(s_i)$ con lo cual la cantidad promedio de información por cada símbolo de la fuente $S$ será
+\[H(S) = \sum_{S} P(s_i) I(s_i)\]
+
+A esta cantidad se la conoce como la entropía de la fuente $S$: $H(S)$.
+
+La primera conclusión que se puede sacar de la definición es que los eventos que más información aportan son aquellos con menor probabilidad de ocurrir.
+
+Es claro que en nuestro modelo no estamos trabajando con fuentes de memoria nula ideales, sino que estamos utilizando redes reales para modelar las mismas, con lo cual las probabilidades serán en realidad estadísticos obtenidos en base a la experimentación (captura de paquetes). Los estadísticos utilizados serán el ratio entre la cantidad de ocurrencias de un evento y el total de los eventos capturados, por esta razón y con la intención que el estadístico sea representativo de la probabilidad de ocurrencia de los eventos se efectuarán capturas durante intervalos de tiempo mayores a diez minutos.
+
+%Para complementar el análisis se estudiará la entropía de las fuentes modeladas y se analizará la cantidad de información inherente a cada uno de sus simbolos, con esto buscamos justificar el criterio de distinguibilidad de los mismos
