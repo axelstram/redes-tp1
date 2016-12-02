@@ -3,9 +3,12 @@ from scapy.all import *
 import numpy as np
 import sys
 import networkx as nx
-import matplotlib.pyplot as plt
 from netaddr import *
 
+
+# GLOBAL VARIABLES
+tipoDePaqueteARP = 1
+distingoPorSource = True
 broadcast_counter = 0
 total_packets = 0
 nodos = {} #{host: cant de apariciones}
@@ -17,15 +20,16 @@ def arp_monitor_callback(pkt):
 	global broadcast_counter
 	global nodos 
 
-	if ARP in pkt and pkt[ARP].op == whoHasORisAt: #who-has or is-at
+	if ARP in pkt and pkt[ARP].op == tipoDePaqueteARP: #who-has or is-at
 		total_packets += 1
 
-		if hostORdest == 1:
+		if distingoPorSource:
 			agregarADiccNodos(pkt.getlayer(ARP).psrc)
 			agregarADiccConnections(pkt.getlayer(ARP).psrc, pkt.getlayer(ARP).pdst)
 		else:
 			agregarADiccNodos(pkt.getlayer(ARP).pdst)
 			agregarADiccConnections(pkt.getlayer(ARP).pdst, pkt.getlayer(ARP).psrc)
+
 
 def agregarADiccNodos(host):
 	if host in nodos.keys():
@@ -33,11 +37,13 @@ def agregarADiccNodos(host):
 	else:
 		nodos[host] = 1
 
+
 def agregarADiccConnections(host, host_connection):
 	if host in connections.keys():
 		connections[host].append(host_connection)
 	else:
 		connections[host] = [host_connection]
+
 
 def groupConnectionsByNetwork(redes, host_connections):
 	networks_connections = []
@@ -52,6 +58,7 @@ def groupConnectionsByNetwork(redes, host_connections):
 				break
 
 	return networks_connections
+
 
 #toma un diccionario de [ip, #repeticiones] (por ahi hay que cambiarlo a [ip, probabilidad])
 def entropy(nodos):
@@ -73,9 +80,7 @@ def entropy(nodos):
 
 	return [H, informacionPorNodo]
 
-# GLOBAL VARIABLES
-whoHasORisAt = 1
-hostORdest = 1
+
 
 # Funcion para generar un diccionario de redes sumarizadas con cantidad de nodos que la componen
 def sumarizar_redes(non_dist):
@@ -127,9 +132,14 @@ if __name__ == '__main__':
 	capture = []
 
 	# who-has or is-at
-	whoHasORisAt= int(raw_input("Who-Has (1) or Is-At(2)?: "))
-	# host or dest
-	hostORdest= int(raw_input("Host (1) or Dest(2)?: "))
+	tipoDePaqueteARP = int(raw_input("Who-Has (1) or Is-At(2)?: "))
+	# source or dest
+	opcion = int(raw_input("Source (1) or Dest(2)?: "))
+
+	if opcion == 1:
+		distingoPorSource = True
+	else: 
+		distingoPorSource = False
 
 	print "...................................................."
 
