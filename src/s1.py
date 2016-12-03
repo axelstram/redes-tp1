@@ -119,7 +119,8 @@ def dividir_nodos(entropia, informacionPorNodo):
 	dist = []
 	non_dist = []
 	for nodo in informacionPorNodo:
-		if nodo[1] < math.ceil(entropia)/2:
+
+		if nodo[1] < entropia:
 			dist.append(nodo)
 		else:
 			non_dist.append(nodo)
@@ -142,6 +143,7 @@ if __name__ == '__main__':
 		distingoPorSource = False
 
 	print "...................................................."
+	print "Capturando/Analizando captura..."
 
 	if len(sys.argv) > 1:
 		print "Analizando captura"
@@ -149,55 +151,55 @@ if __name__ == '__main__':
 
 		for pkt in capture:
 			arp_monitor_callback(pkt)
-
-		print "...................................................."
-
-		# ENTROPIA
-		[entropia, informacionPorNodo] = entropy(nodos)
-		print "La entropia de la fuente es: "
-		print entropia
-		print "...................................................."
-
-		# DISTINCION DE NODOS
-		[dist, non_dist] = dividir_nodos(entropia, informacionPorNodo)
-		
-		resp = raw_input("Imprimir informacion de cada nodo distinguido? (s o n): ")
-		if 's' in resp:
-			print "Nodos distinguidos: ", dist
-		else:
-			print "Nodos distinguidos: ", [n[0] for n in dist]
-
-		resp = raw_input("Imprimir nodos NO distinguidos? (s o n): ")
-		if 's' in resp:
-			resp = raw_input("Imprimir informacion de cada nodo NO distinguido? (s o n): ")
-			if 's' in resp:
-				print "Nodos NO distinguidos: ", non_dist
-			else:
-				print "Nodos NO distinguidos: ", [n[0] for n in non_dist]
-		print "...................................................."
-
-		# SUMARIZAR POR REDES LOS NO DISTINGUIDOS
-		redes = {}
-		sumarize = raw_input("Sumarizar redes en los nodos no distinguidos? (s o n): ")
-		if 's' in sumarize:
-			redes = sumarizar_redes(non_dist)
-			print "Redes con cantidad de hits: ", redes
-		print "...................................................."
-
-		print "Creando diccionario de nodos distinguidos y sus conecciones: "
-		dist_connections = {}
-		nodos_distinguidos= [d[0] for d in dist]
-
-		for host, host_connections in connections.iteritems():
-			if host in nodos_distinguidos:
-				if 's' in sumarize:
-					dist_connections[host] = groupConnectionsByNetwork(redes, host_connections)
-				else:
-					dist_connections[host] = host_connections
-
-		print dist_connections
-		print "...................................................."
-		
-			
 	else:
 		sniff(prn = arp_monitor_callback, filter = "arp", store = 0)
+
+	print "...................................................."
+
+	# ENTROPIA
+	[entropia, informacionPorNodo] = entropy(nodos)
+	print "La entropia de la fuente es: "
+	print entropia
+	print "...................................................."
+
+	# DISTINCION DE NODOS
+	[dist, non_dist] = dividir_nodos(entropia, informacionPorNodo)
+	
+	resp = raw_input("Imprimir informacion de cada nodo distinguido? (s o n): ")
+	if 's' in resp:
+		print "Nodos distinguidos: ", dist
+	else:
+		print "Nodos distinguidos: ", [n[0] for n in dist]
+
+	resp = raw_input("Imprimir nodos NO distinguidos? (s o n): ")
+	if 's' in resp:
+		resp = raw_input("Imprimir informacion de cada nodo NO distinguido? (s o n): ")
+		if 's' in resp:
+			print "Nodos NO distinguidos: ", non_dist
+		else:
+			print "Nodos NO distinguidos: ", [n[0] for n in non_dist]
+	print "...................................................."
+
+	# SUMARIZAR POR REDES LOS NO DISTINGUIDOS
+	redes = {}
+	sumarize = raw_input("Sumarizar redes en los nodos no distinguidos? (s o n): ")
+	if 's' in sumarize:
+		redes = sumarizar_redes(non_dist)
+		print "Redes con cantidad de hits: ", redes
+	print "...................................................."
+
+	print "Creando diccionario de nodos distinguidos y sus conecciones: "
+	dist_connections = {}
+	nodos_distinguidos= [d[0] for d in dist]
+
+	for host, host_connections in connections.iteritems():
+		if host in nodos_distinguidos:
+			if 's' in sumarize:
+				dist_connections[host] = groupConnectionsByNetwork(redes, host_connections)
+			else:
+				dist_connections[host] = host_connections
+
+	print dist_connections
+	print "...................................................."
+		
+			
