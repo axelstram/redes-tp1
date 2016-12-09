@@ -3,6 +3,7 @@ from scapy.all import *
 import numpy as np
 import sys
 import networkx as nx
+import matplotlib.pyplot as plt
 from netaddr import *
 
 
@@ -12,7 +13,6 @@ distingoPorSource = True
 broadcast_counter = 0
 total_packets = 0
 nodos = {} #{host: cant de apariciones}
-
 connections = {} #{src: [dst] } o {dst: [src] } depende el modo que se elija
 
 def arp_monitor_callback(pkt):
@@ -45,12 +45,38 @@ def agregarADiccConnections(host, host_connection):
 		connections[host] = [host_connection]
 
 
+def crearGrafo(nodos_distinguidos_connections):
+	G = nx.DiGraph()
+
+	for nodo in nodos_distinguidos_connections.keys():
+		for coneccion in nodos_distinguidos_connections[nodo]:
+			G.add_edge(nodo, coneccion)
+
+	d = nx.degree(G)
+
+	nx.draw_networkx(G, 
+		nodelist=d.keys(), 
+		node_size=[v * 100 for v in d.values()], 
+		node_shape='o',
+		arrows=True,
+		node_color='cyan', 
+		font_size=10, 
+		font_weight='bold', 
+		style='solid',
+		with_labels=True)
+	
+	outfile=sys.argv[1].split('/')[-1].split('.')[0] + ".eps"
+	plt.savefig(outfile, format="EPS")
+
+
+
+
 def groupConnectionsByNetwork(redes, host_connections):
 	networks_connections = []
 
 	for host in host_connections:
-		ip = IPAddress(host)
-
+		#ip = IPAddress(host)
+		ip = host
 		for red, veces in redes.iteritems():
 			if ip in red:
 				if red not in networks_connections:
@@ -189,17 +215,26 @@ if __name__ == '__main__':
 	print "...................................................."
 
 	print "Creando diccionario de nodos distinguidos y sus conecciones: "
-	dist_connections = {}
+	nodos_distinguidos_connections = {}
 	nodos_distinguidos= [d[0] for d in dist]
+
+	print "connections: "
+	print connections
 
 	for host, host_connections in connections.iteritems():
 		if host in nodos_distinguidos:
 			if 's' in sumarize:
-				dist_connections[host] = groupConnectionsByNetwork(redes, host_connections)
+				nodos_distinguidos_connections[host] = groupConnectionsByNetwork(redes, host_connections)
 			else:
-				dist_connections[host] = host_connections
+				nodos_distinguidos_connections[host] = host_connections
 
-	print dist_connections
+	print nodos_distinguidos_connections
 	print "...................................................."
 		
-			
+	hayQueCrearGrafo = raw_input("Crear grafo de la red? (s o n): ")
+
+	if hayQueCrearGrafo == 's':
+		crearGrafo(nodos_distinguidos_connections)
+
+
+
