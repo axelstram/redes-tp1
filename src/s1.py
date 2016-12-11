@@ -65,25 +65,27 @@ def crearGrafo(nodos_distinguidos_connections):
 		style='solid',
 		with_labels=True)
 	
-	outfile=sys.argv[1].split('/')[-1].split('.')[0] + ".eps"
+	if len(sys.argv) > 1:
+		outfile=sys.argv[1].split('/')[-1].split('.')[0] + ".eps"
+	else:
+		outfile=raw_input("Ingrese un nombre para el grafico (sin extension): ")
+		outfile+=".eps"
+	
 	plt.savefig(outfile, format="EPS")
 
 
-
-
 def groupConnectionsByNetwork(redes, host_connections):
-	networks_connections = []
-
+	networks_connections = set()
+	
 	for host in host_connections:
 		#ip = IPAddress(host)
 		ip = host
 		for red, veces in redes.iteritems():
 			if ip in red:
-				if red not in networks_connections:
-					networks_connections.append(red)
+				networks_connections.add(red)
 				break
 
-	return networks_connections
+	return list(networks_connections)
 
 
 #toma un diccionario de [ip, #repeticiones] (por ahi hay que cambiarlo a [ip, probabilidad])
@@ -144,7 +146,7 @@ def dividir_nodos(entropia, informacionPorNodo):
 	# Listas de distinguidos vs no distinguidos
 	dist = []
 	non_dist = []
-	for nodo in informacionPorNodo:
+	for nodo in informacionPorNodo: #informacionPorNodo = [(ip, probabilidad)]
 
 		if nodo[1] < entropia:
 			dist.append(nodo)
@@ -199,7 +201,7 @@ if __name__ == '__main__':
 
 	resp = raw_input("Imprimir nodos NO distinguidos? (s o n): ")
 	if 's' in resp:
-		resp = raw_input("Imprimir informacion de cada nodo NO distinguido? (s o n): ")
+		resp = raw_input("Y la informacion de cada nodo NO distinguido? (s o n): ")
 		if 's' in resp:
 			print "Nodos NO distinguidos: ", non_dist
 		else:
@@ -218,18 +220,18 @@ if __name__ == '__main__':
 	nodos_distinguidos_connections = {}
 	nodos_distinguidos= [d[0] for d in dist]
 
-	print "connections: "
-	print connections
-
 	for host, host_connections in connections.iteritems():
 		if host in nodos_distinguidos:
 			if 's' in sumarize:
 				nodos_distinguidos_connections[host] = groupConnectionsByNetwork(redes, host_connections)
 			else:
-				nodos_distinguidos_connections[host] = host_connections
+				nodos_distinguidos_connections[host] = list(set(host_connections))
 
 	print nodos_distinguidos_connections
 	print "...................................................."
+	# print "connections (para debug): "
+	# print connections
+	# print "...................................................."
 		
 	hayQueCrearGrafo = raw_input("Crear grafo de la red? (s o n): ")
 
