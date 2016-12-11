@@ -3,7 +3,7 @@
 %Para realizar este TP utilizamos como herramientas Wireshark[1], Scapy[2], y Python. 
 Para el presente trabajo práctico se desarrolló un programa en Python utilizando la libreria Scapy que captura los paquetes que escucha la interfaz definida y filtra los mismos quedandose solamente con aquellos que son paquetes del protocolo ARP, el mismo programa acepta como parámetros la ruta de un archivo en formato ''.pcap'' que puede ser generado por medio de capturas anteriores o utilizando software alternativo como Wireshark.
 
-Distintas variantes del programa permiten clasificar los paquetes capturados de acuerdo a la distinción entre paquetes con direccionamiento Broadcast o direccionamiento Unicast así como distinguiendo por direcciones IP de origen para modelar las fuentes $S$ y $S1$ respectivamente. Con estos datos se calculan la entropía y la cantidad de información de cada símbolo.
+Tenemos dos variantes del programa, uno para cada fuente explicadas más adelante. Con los datos obtenidos por el programa se calculan la entropía y la cantidad de información de cada símbolo en cada fuente.
 
 Adicionalmente se utilizaron programas auxiliares para generar los gráficos, se crearon archivos dot por medio de scripts en python y luego se graficaron mediante GraphViz.
 
@@ -11,8 +11,11 @@ Se capturaron redes de distintos tamaños utilizando distintas tecnologías a ni
 
 
 \subsection{Fuente S}
-Esta fuente binaria está compuesta por los símbolos ${s_{Broadcast}, s_{Unicast}}$
+Esta fuente binaria está compuesta por los símbolos ${s_{Broadcast}, s_{Unicast}}$. 
 
 \subsection{Fuente S1}
+Para S1 teníamos varias opciones dentro de los paquetes ARP. Podíamos ver los paquetes Who-Has o Is-At, así como también podíamos centrarnos en source o destino. Es decir, cuatro combinaciones. Para decidirnos por una de ellas lo que hicimos fue experimentar con todas y analizar los resultados. 
 
-Esta fuente está compuesta por los símbolos $s_{Src}$, es decir, las direcciones IP origen de los paquetes ARP.
+[EXPLICACIÓN DE CON CUÁL NOS QUEDAMOS Y POR QUÉ]
+
+[SIMBOLOS DE LA FUENTE]
