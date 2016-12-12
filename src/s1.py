@@ -170,16 +170,10 @@ def sumarizar_redes(no_distinguidos):
 
 def dividir_nodos(entropia, informacionPorNodo):
 	# Listas de distinguidos vs no distinguidos
-<<<<<<< HEAD
+
 	distinguidos = []
 	no_distinguidos = []
 	for nodo in informacionPorNodo: #informacionPorNodo = [(ip, probabilidad)]
-
-=======
-	dist = []
-	non_dist = []
-	for nodo in informacionPorNodo: #informacionPorNodo = [(ip, informacion)]
->>>>>>> 37ea31d97d01b987cec4ef5357fabf978f38e797
 		if nodo[1] < entropia:
 			distinguidos.append(nodo)
 		else:
