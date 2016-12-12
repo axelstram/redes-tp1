@@ -23,6 +23,8 @@ def graficar_informacion_y_entropia(informacion, entropia, entropia_maxima):
 		simbolos.append(tupla[0])
 		informacion.append(tupla[1])
 
+		print "simbolo: ", tupla[0], " informacion: ", tupla[1]
+
 	plt.xlabel('Simbolos')
 	plt.ylabel('Informacion')
 	plt.ylim([0, informacion[len(informacion)-1] + 5])
