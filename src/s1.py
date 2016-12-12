@@ -59,9 +59,10 @@ def crearGrafo(nodos_distinguidos_connections):
 		node_size=[v * 100 for v in d.values()], 
 		node_shape='o',
 		arrows=True,
-		node_color='cyan', 
+		node_color='#000099', 
 		font_size=10, 
-		font_weight='bold', 
+		font_weight='bold',
+		font_color='#ff3300', 
 		style='solid',
 		with_labels=True)
 	
@@ -72,6 +73,7 @@ def crearGrafo(nodos_distinguidos_connections):
 		outfile+=".eps"
 	
 	plt.savefig(outfile, format="EPS")
+	plt.show()
 
 
 def groupConnectionsByNetwork(redes, host_connections):
@@ -171,7 +173,6 @@ if __name__ == '__main__':
 		distingoPorSource = False
 
 	print "...................................................."
-	print "Capturando/Analizando captura..."
 
 	if len(sys.argv) > 1:
 		print "Analizando captura"
@@ -180,6 +181,7 @@ if __name__ == '__main__':
 		for pkt in capture:
 			arp_monitor_callback(pkt)
 	else:
+		print "Capturando trafico..."
 		sniff(prn = arp_monitor_callback, filter = "arp", store = 0)
 
 	print "...................................................."
