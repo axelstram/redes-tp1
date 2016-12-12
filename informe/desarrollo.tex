@@ -19,3 +19,14 @@ Para S1 teníamos varias opciones dentro de los paquetes ARP. Podíamos ver los 
 \subsection{Implementación}
 Para llevar a cabo los experimentos implementamos una herramienta en Python utilizando la librería \textit{scapy}[1], y capturamos los paquetes con \textit{Wireshark}[2].
 
+%%explicacion de como funciona el programa.
+Nuestro programa comienza preguntando si se desea capturar paquetes Who-has o Is-at, y a su vez si se quiere filtrar por origen o destino. Luego, crea 2 diccionarios: \textit{nodos}, que es un diccionario de la forma ${host: cant de apariciones}$, y \textit{connections}, que es de la forma ${src: [dst] }$ ó ${dst: [src] }$, según qué modo se elija. Éste último diccionario guarda, para cada key, una lista de todos los nodos con los que se conecta. Esto nos sirve luego para poder visualizar la red como un grafo.
+
+Luego calculamos la entropía y la información que aporta cada nodo. Esto nos sirve para poder dividir los nodos en 2 categorías: \textbf{distinguidos} y \textbf{no distinguidos}. Los nodos distinguidos los definimos como aquellos cuya información está por debajo de la entropía. Lo que esperamos conseguir con esto es que entre los nodos distinguidos esté el default gateway. Probamos también con otros criterios de corte para considerar un nodo distinguido o no: por ejemplo, en vez de la entropía, tomar el logaritmo de la entropía, la raíz cuadrada de la entropía, dividir la entropía por una constante, etc. Por motivos de espacio no colocamos los resultados para cada uno de estos casos, pero no notamos ninguna mejoría notable con respecto a simplemente tomar la entropía. En algunos casos funcionaba mejor tomar simplemente la entropía, en otros el logaritmo de la entropía, pero en general funcionó mejor lo primero, y por lo tanto nos terminamos quedando con eso.
+
+Calculado esto, procedemos a realizar distintos gráficos: el primero consiste en un gráfico de la información de cada nodo junto con la entropía máxima y real de la red. Nos quedamos con los 8 nodos con menor información, lo cuál resultó ser una buena heurística para observar tanto los nodos distinguidos como algunos nodos no distinguidos. Para éste gráfico utilizamos la librería \textit{matplotlib}. Otro gráfico que realizamos es un grafo con todos los nodos de la red y sus conexiones. Este lo realizamos con la librería \textit{networkx}.
+
+Las redes que utilizamos para nuestros análisis son: una red corporativa grande, dos redes corporativas pequeñas, y una red hogareña.
+
+\subsection{Utilización de la herramienta}
+Para correr el programa, se debe ejecutar el siguiente comando: python s1.py \textit{paquete}, donde \textit{paquete} es una captura en formato .pcap. De no especificarse éste parámetro, se realiza una captura en vivo de la red.

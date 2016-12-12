@@ -80,8 +80,8 @@ def groupConnectionsByNetwork(redes, host_connections):
 	networks_connections = set()
 	
 	for host in host_connections:
-		#ip = IPAddress(host)
-		ip = host
+		ip = IPAddress(host)
+
 		for red, veces in redes.iteritems():
 			if ip in red:
 				networks_connections.add(red)
@@ -148,8 +148,7 @@ def dividir_nodos(entropia, informacionPorNodo):
 	# Listas de distinguidos vs no distinguidos
 	dist = []
 	non_dist = []
-	for nodo in informacionPorNodo: #informacionPorNodo = [(ip, probabilidad)]
-
+	for nodo in informacionPorNodo: #informacionPorNodo = [(ip, informacion)]
 		if nodo[1] < entropia:
 			dist.append(nodo)
 		else:
