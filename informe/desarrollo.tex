@@ -11,11 +11,11 @@ Se capturaron redes de distintos tamaños utilizando distintas tecnologías a ni
 
 
 \subsection{Fuente S}
-Esta fuente binaria está compuesta por los símbolos ${s_{Broadcast}, s_{Unicast}}$. 
+Esta fuente binaria está compuesta por los símbolos ${s_{Broadcast}, s_{Unicast}}$ pertenecientes al protocolo ARP. Como sus nombres lo indican, el símbolo $s_{Broadcast}$ es un paquete que está destinado a toda la red (mensaje ARP "Who-has"), mientras que el símbolo $s_{Unicast}$ (mensaje ARP "Is-at") corresponde al paquete ARP que se envía como respuesta al mensaje "Who-has".
 
 \subsection{Fuente S1}
-Para S1 teníamos varias opciones dentro de los paquetes ARP. Podíamos ver los paquetes Who-Has o Is-At, así como también podíamos centrarnos en source o destino. Es decir, cuatro combinaciones. Para decidirnos por una de ellas lo que hicimos fue experimentar con todas y analizar los resultados. 
+Para S1 teníamos varias opciones dentro de los paquetes ARP. Podíamos ver los paquetes Who-Has o Is-At, así como también podíamos centrarnos en source o destino. Es decir, cuatro combinaciones. Para decidirnos por una de ellas lo que hicimos fue experimentar con todas y analizar los resultados. Nos terminamos quedando con las IP source de los mensajes \textit{Who-has}, ya que ésta fuente fue la que mejor modelaba la "Red Corporativa", la cuál es una red relativamente grande. De todas maneras queremos notar que ninguna de las fuentes es perfecta, y que en algunas redes funcionan mejor otras fuentes (por ejemplo quedandonos con las IPs destino en vez de source), pero por lo dicho anteriormente terminamos eligiendo los paquetes source.
 
-[EXPLICACIÓN DE CON CUÁL NOS QUEDAMOS Y POR QUÉ]
+\subsection{Implementación}
+Para llevar a cabo los experimentos implementamos una herramienta en Python utilizando la librería \textit{scapy}[1], y capturamos los paquetes con \textit{Wireshark}[2].
 
-[SIMBOLOS DE LA FUENTE]
