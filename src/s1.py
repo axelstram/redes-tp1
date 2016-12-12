@@ -45,24 +45,46 @@ def agregarADiccConnections(host, host_connection):
 		connections[host] = [host_connection]
 
 
-def crearGrafo(nodos_distinguidos_connections):
+def crearGrafo(nodos_distinguidos_information, network_sizes, nodos_distinguidos_connections):
 	G = nx.DiGraph()
 
 	for nodo in nodos_distinguidos_connections.keys():
-		for coneccion in nodos_distinguidos_connections[nodo]:
-			G.add_edge(nodo, coneccion)
+		for conection in nodos_distinguidos_connections[nodo]:
+			G.add_edge(nodo, conection)
 
-	d = nx.degree(G)
+	max_network_size = 0
+	if network_sizes: 
+		max_network_size = max(network_sizes.values())
+	degrees = nx.degree(G)
+	colors = []
+	sizes = []
 
-	nx.draw_networkx(G, 
-		nodelist=d.keys(), 
-		node_size=[v * 100 for v in d.values()], 
+	#color: si es distinguido verde sino azul
+	#size: si es distinguido depende de su informacion, caso contrario de su grado o el tamanio de la red
+	for n in G.nodes():
+		if n in nodos_distinguidos_connections.keys():
+			colors.append('#61c94a')
+			sizes.append(1500/nodos_distinguidos_information[n])
+		else:
+			colors.append('#718af7')
+			if n in network_sizes.keys():
+				size = (network_sizes[n]/max_network_size) * 1000
+				if size<100:
+					size=100
+				sizes.append(size)
+			else:
+				sizes.append(degrees[n] * 100)
+
+
+	nx.draw_networkx(G,
+		node_size=sizes, 
+		node_color=colors, 
 		node_shape='o',
+		edge_color='#9b9b9b',
 		arrows=True,
-		node_color='#000099', 
-		font_size=10, 
+		font_size=12, 
 		font_weight='bold',
-		font_color='#ff3300', 
+		font_color='black', 
 		style='solid',
 		with_labels=True)
 	
@@ -75,17 +97,18 @@ def crearGrafo(nodos_distinguidos_connections):
 	plt.savefig(outfile, format="EPS")
 	plt.show()
 
-
-def groupConnectionsByNetwork(redes, host_connections):
+#agrupa las conecciones con nodos no distinguidos en redes
+def groupConnectionsByNetwork(redes, nodos_distinguidos, host_connections):
 	networks_connections = set()
 	
-	for host in host_connections:
-		#ip = IPAddress(host)
-		ip = host
-		for red, veces in redes.iteritems():
-			if ip in red:
-				networks_connections.add(red)
-				break
+	for ip in host_connections:
+		if ip in nodos_distinguidos:
+			networks_connections.add(ip)
+		else:
+			for red, veces in redes.iteritems():
+				if ip in red:
+					networks_connections.add(red)
+					break
 
 	return list(networks_connections)
 
@@ -113,8 +136,8 @@ def entropy(nodos):
 
 
 # Funcion para generar un diccionario de redes sumarizadas con cantidad de nodos que la componen
-def sumarizar_redes(non_dist):
-	ip_addr = [IPAddress(i) for i in [seq[0] for seq in non_dist]]
+def sumarizar_redes(no_distinguidos):
+	ip_addr = [IPAddress(i) for i in [seq[0] for seq in no_distinguidos]]
 
 	redes = {}
 	for ip in ip_addr:
@@ -146,16 +169,16 @@ def sumarizar_redes(non_dist):
 
 def dividir_nodos(entropia, informacionPorNodo):
 	# Listas de distinguidos vs no distinguidos
-	dist = []
-	non_dist = []
+	distinguidos = []
+	no_distinguidos = []
 	for nodo in informacionPorNodo: #informacionPorNodo = [(ip, probabilidad)]
 
 		if nodo[1] < entropia:
-			dist.append(nodo)
+			distinguidos.append(nodo)
 		else:
-			non_dist.append(nodo)
+			no_distinguidos.append(nodo)
 
-	return [dist, non_dist]
+	return [distinguidos, no_distinguidos]
 
 				
 #Si le paso un argumento, asumo que es una captura en formato libpcap. Sino, sniffeo la red
@@ -193,39 +216,39 @@ if __name__ == '__main__':
 	print "...................................................."
 
 	# DISTINCION DE NODOS
-	[dist, non_dist] = dividir_nodos(entropia, informacionPorNodo)
+	[distinguidos, no_distinguidos] = dividir_nodos(entropia, informacionPorNodo)
 	
 	resp = raw_input("Imprimir informacion de cada nodo distinguido? (s o n): ")
 	if 's' in resp:
-		print "Nodos distinguidos: ", dist
+		print "Nodos distinguidos: ", distinguidos
 	else:
-		print "Nodos distinguidos: ", [n[0] for n in dist]
+		print "Nodos distinguidos: ", [n[0] for n in distinguidos]
 
 	resp = raw_input("Imprimir nodos NO distinguidos? (s o n): ")
 	if 's' in resp:
 		resp = raw_input("Y la informacion de cada nodo NO distinguido? (s o n): ")
 		if 's' in resp:
-			print "Nodos NO distinguidos: ", non_dist
+			print "Nodos NO distinguidos: ", no_distinguidos
 		else:
-			print "Nodos NO distinguidos: ", [n[0] for n in non_dist]
+			print "Nodos NO distinguidos: ", [n[0] for n in no_distinguidos]
 	print "...................................................."
 
 	# SUMARIZAR POR REDES LOS NO DISTINGUIDOS
 	redes = {}
 	sumarize = raw_input("Sumarizar redes en los nodos no distinguidos? (s o n): ")
 	if 's' in sumarize:
-		redes = sumarizar_redes(non_dist)
+		redes = sumarizar_redes(no_distinguidos)
 		print "Redes con cantidad de hits: ", redes
 	print "...................................................."
 
 	print "Creando diccionario de nodos distinguidos y sus conecciones: "
 	nodos_distinguidos_connections = {}
-	nodos_distinguidos= [d[0] for d in dist]
+	nodos_distinguidos= [d[0] for d in distinguidos]
 
 	for host, host_connections in connections.iteritems():
 		if host in nodos_distinguidos:
 			if 's' in sumarize:
-				nodos_distinguidos_connections[host] = groupConnectionsByNetwork(redes, host_connections)
+				nodos_distinguidos_connections[host] = groupConnectionsByNetwork(redes, nodos_distinguidos, host_connections)
 			else:
 				nodos_distinguidos_connections[host] = list(set(host_connections))
 
@@ -238,7 +261,7 @@ if __name__ == '__main__':
 	hayQueCrearGrafo = raw_input("Crear grafo de la red? (s o n): ")
 
 	if hayQueCrearGrafo == 's':
-		crearGrafo(nodos_distinguidos_connections)
+		crearGrafo(dict(distinguidos), redes, nodos_distinguidos_connections)
 
 
 
