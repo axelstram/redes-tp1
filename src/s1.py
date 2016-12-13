@@ -236,13 +236,20 @@ if __name__ == '__main__':
 
 	# SUMARIZAR POR REDES LOS NO DISTINGUIDOS
 	redes = {}
-	sumarize = raw_input("Sumarizar redes en los nodos no distinguidos? (s o n): ")
-	if 's' in sumarize:
+	
+	resp = raw_input("Sumarizar redes en los nodos no distinguidos? (s o n): ")
+	sumarize = False
+	if 's' in resp:
+		sumarize = True
+	
+	if sumarize:
 		redes = sumarizar_redes(no_distinguidos)
 		print "Redes con cantidad de hits: ", redes
 	print "...................................................."
 
-	withNoDistConnections = raw_input("Agregar las conecciones de los nodos no distinguidos? (s o n): ")
+	withNoDistConnections = 'n'
+	if not sumarize:
+		withNoDistConnections = raw_input("Agregar las conecciones de los nodos no distinguidos? (s o n): ")
 
 	print "Creando diccionario de nodos y sus conecciones: "
 	nodes_connections = {}
@@ -255,7 +262,7 @@ if __name__ == '__main__':
 
 	for host, host_connections in connections.iteritems():
 		if host in nodes:
-			if 's' in sumarize:
+			if sumarize:
 				nodes_connections[host] = groupConnectionsByNetwork(redes, nodes, host_connections)
 			else:
 				nodes_connections[host] = list(set(host_connections))
