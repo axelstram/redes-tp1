@@ -18,7 +18,7 @@ Indagando un poco más en la configuración de la capturadora, nos encontramos q
 
 Llegados a este punto del análisis acudimos a metodologías experimentales y no tanto para arrojar más luz sobre la topología de la red, que pasamos a detallar.
 
-Primero analizamos los datos arrojados por una fuente de información alternativa, particularmente, la fuente que distingue mensajes \textit{Who-has} basados en la ip destino. A pesar de las estrategias de agrupación de nodos y dimensionamiento en base a cantidad de información el gráfico generado es muy complejo para analizar a simple vista y decidimos no incluirlo, baste declarar que efectivamente aparece como nodo distinguido el default gateway declarado (10.245.80.1) pero su tamaño es sólo marginalmente mayor que el del resto de los nodos distinguidos hallados, y siendo estos notablemente más que para la fuente original, se dificulta hallarlo en una inspeción visual.
+Primero analizamos los datos arrojados por una fuente de información alternativa, particularmente, la fuente que distingue mensajes \textit{Who-has} basados en la ip destino. A pesar de las estrategias de agrupación de nodos y dimensionamiento en base a cantidad de información el gráfico generado es muy complejo para analizar a simple vista y decidimos no incluirlo, baste declarar que efectivamente aparece como nodo distinguido el default gateway declarado (10.245.80.1) pero su tamaño es sólo marginalmente mayor que el del resto de los nodos distinguidos hallados, y siendo estos notablemente más que para la fuente original, se dificulta hallarlo en una inspeción visual.\\
 
 % Posterior al análisis experimental
 Para complementar el análisis puramente experimental acudimos a enfoques alternativos tales como analizar los nodos distinguidos con otras herramientas, especificamente \textit{nmap} para verificar hipótesis sobre cuales eran los verdaderos gateways y cuales eran equipos normales que sólo calificaban como nodos distinguidos debido a su actividad excesiva en relación con los nodos no distinguidos. Basados en la detección de sistema operativo que ofrece, confirmamos que los nodos distinguidos 10.245.80.2 y 10.245.80.3 eran efectivamente elementos de red, dado que sus sistemas operativos eran \textit{Cisco iOS}, adicionalmente se confirmó que el resto de los nodos distinguidos dentro de la componente conexa que estamos analizando eran equipos de usuario final, en general con alguna variante de sistema operativo Windows y reforzados por los hostnames descubiertos que seguian la nomenclatura estricta de los equipos pertenecientes al dominio corporativo en la empresa. El análisis mediante nmap del default gateway declarado arrojó que el nodo no respondía con ninguna información útil.
@@ -26,8 +26,24 @@ Para complementar el análisis puramente experimental acudimos a enfoques altern
 La hipótesis a la que arribamos, luego de comentar la situación con expertos en el lugar de la captura, fue que probablemente la ip 10.245.80.1 perteneciera a un balanceador de carga /una especie de ip virtual) que distribuyera la misma entre dos nodos físicos: 10.245.80.2 y 10.245.80.3, esto explica tambien la ausencia de conexiones entre los nodos distinguidos que resultaron ser PCs de usuarios finales y los gateways descubiertos, dado que los paquetes \textit{Who-has} de estos nodos para actualizar la MAC de su default gateway fueron efectuados hacia la 10.245.80.1 (que queda oculta dentro de la nube) mientras que la actualización de las tablas ARP de los default gateways físicos, se generaba con origen ip de las ips físicas de dichos nodos.
 
 Esto aún dejaba la duda de por qué los gateways físicos no actualizaban la información del resto de los nodos distinguidos, nuestra conclusión es que al experimentar mucho tráfico (el tráfico suficiente para que califique como nodo distinguido) y debido a la naturaleza asimetrica de la red en cuestión, la capturadora generó mucho trafico preguntando por su default gateway declarado 10.245.80.1 (que es una ip de balanceo descargando sobre 10.245.80.2 y 10.245.80.3  que como puede apreciarse por los tamaños de esos nodos en el grafico son aquellos nodos más distinguidos - aquellos con mayor actividad): la tabla ARP de los gateways resetea su tiempo de vida en relación al nodo que efectua la captura, haciendo innecesario que los gateways salgan a preguntar a toda la red, quien posee la dirección ip 10.245.80.89.
-Similarmente arribamos a una conclusión paralela para el resto de los nodos distinguidos que registra menor actividad que los gateways.
+Similarmente arribamos a una conclusión paralela para el resto de los nodos distinguidos que registra menor actividad que los gateways.\\
 
 También se confirmó esta hipótesis averiguando con los encargados del diseño, implementación y mantenimiento de la red, quienes verificaron que los gateways principales en la red eran los nodos 10.245.80.2 y 10.245.80.3 para la red de mayor actividad, que es a la que el equipo capturador se encontraba asociada (y adicionalmente aquella cuyo rango de potencia de radio era más fuerte debido a la cantidad de actividad mayor que se registró). También nos indicaron que por política de la empresa las primeras 15 ips disponibles de cada red se reservaban para la utilización a discreción del grupo de networking.
 
 Pueden observarse superpuestas en el grafico redes de menor tamaño y trafico en los que la evidencia experimental (y la investigación de la infraestructura llevada a cabo) para lo que ocurre lo mismo: los gateways están dentro de los primeros 15 hosts de la red (reservados por el grupo de networking en todas las redes corporativas), en particular en los x.x.x.3 y x.x.x.4 y actualizan su tabla respecto de hosts que estan en sus redes (10.65.33.0/24, 10.66.33.0/24 y 10.67.33.0/24)
+
+A continuación se presentan los resultados para las fuentes $S$ y $S1$ a nivel teoría de la información y entropía.
+
+\begin{center}
+\includegraphics[scale=0.7]{imagenes/captura-tcorp-fuente-s.png} 
+\end{center}
+
+Puede verse que los broadcast superan en cantidad a los unicast: esto es, posiblemente, porque se capturan los broadcast de toda la red y sólo los unicast que están al alcance de radio del wi-fi. Es por esto que los unicast nos aportan tanta información.
+
+\begin{center}
+\includegraphics[scale=0.5]{imagenes/captura-tcorp-fuente-s1.png} 
+\end{center}
+
+Aquí puede verse que a medida que la información crece dentro de los nodos distinguidos, la curva se va suavizando, lo que creemos que indica que los nodos con mayor cantidad de información son de la misma naturaleza entre sí.
+Luego, los nodos que aportan menor cantidad de información pueden distinguirse a partir del gráfico como los gateways, teniendo en cuenta el análisis previo.
+
