@@ -27,8 +27,11 @@ Observando la disposición de la red descubrimos manualmente que posee dos IP f�
 \begin{center}
 \includegraphics[scale=0.65]{imagenes/analisisTCORPcableada/cableada-11sum.png} 
 \end{center}
+\vspace*{-1cm}
 
-Los nodos distinguidos que vemos en el gráfico son hosts con mucha actividad, los cuáles están consultando a 10.245.89.1. Quien se encuentra incluído en la red ya que recibe pedidos pero las respuestas a estos son emitidas por 10.245.89.3 o 10.245.89.2 entonces no llega a ser distinguido si nuestros símbolos son los IP de origen.\\
+Los nodos distinguidos que vemos en el gráfico son hosts con mucha actividad, los cuáles están consultando a 10.245.89.1. Quien se encuentra incluído en la red ya que recibe pedidos pero las respuestas a estos son emitidas por 10.245.89.3 o 10.245.89.2 entonces no llega a ser distinguido si nuestros símbolos son los IP de origen.
+
+Dentro de estos nodos distinguidos también se encuentra una de los IP físicas de los gateways, 10.245.89.3. Quién queda ocluído por la actividad de los demás equipos.\\
 
 Como no obtuvimos buenos resultados a la hora de detectar el default gateway, probamos con otra fuente a la cuál llamaremos $S2$, que tiene como símbolos los IP destino de los paquetes ARP Who-Has.\\
 
