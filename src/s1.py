@@ -45,11 +45,11 @@ def agregarADiccConnections(host, host_connection):
 		connections[host] = [host_connection]
 
 
-def crearGrafo(nodos_distinguidos_information, network_sizes, nodos_distinguidos_connections):
+def crearGrafo(node_information, network_sizes, nodes_connections):
 	G = nx.DiGraph()
 
-	for nodo in nodos_distinguidos_connections.keys():
-		for conection in nodos_distinguidos_connections[nodo]:
+	for nodo in nodes_connections.keys():
+		for conection in nodes_connections[nodo]:
 			G.add_edge(nodo, conection)
 
 	max_network_size = 0
@@ -62,9 +62,9 @@ def crearGrafo(nodos_distinguidos_information, network_sizes, nodos_distinguidos
 	#color: si es distinguido verde sino azul
 	#size: si es distinguido depende de su informacion, caso contrario de su grado o el tamanio de la red
 	for n in G.nodes():
-		if n in nodos_distinguidos_connections.keys():
+		if n in node_information.keys():
 			colors.append('#61c94a')
-			sizes.append(1500/nodos_distinguidos_information[n])
+			sizes.append(1500/node_information[n])
 		else:
 			colors.append('#718af7')
 			if n in network_sizes.keys():
@@ -242,27 +242,30 @@ if __name__ == '__main__':
 		print "Redes con cantidad de hits: ", redes
 	print "...................................................."
 
-	print "Creando diccionario de nodos distinguidos y sus conecciones: "
-	nodos_distinguidos_connections = {}
-	nodos_distinguidos= [d[0] for d in distinguidos]
+	withNoDistConnections = raw_input("Agregar las conecciones de los nodos no distinguidos? (s o n): ")
+
+	print "Creando diccionario de nodos y sus conecciones: "
+	nodes_connections = {}
+	nodes = []
+
+	if 's' in withNoDistConnections:
+		nodes = connections.keys()
+	else:
+		nodes = [d[0] for d in distinguidos]
 
 	for host, host_connections in connections.iteritems():
-		if host in nodos_distinguidos:
+		if host in nodes:
 			if 's' in sumarize:
-				nodos_distinguidos_connections[host] = groupConnectionsByNetwork(redes, nodos_distinguidos, host_connections)
+				nodes_connections[host] = groupConnectionsByNetwork(redes, nodes, host_connections)
 			else:
-				nodos_distinguidos_connections[host] = list(set(host_connections))
+				nodes_connections[host] = list(set(host_connections))
 
-	print nodos_distinguidos_connections
+	print nodes_connections
+	
 	print "...................................................."
-	# print "connections (para debug): "
-	# print connections
-	# print "...................................................."
-		
-	hayQueCrearGrafo = raw_input("Crear grafo de la red? (s o n): ")
-
-	if hayQueCrearGrafo == 's':
-		crearGrafo(dict(distinguidos), redes, nodos_distinguidos_connections)
+	
+	print "Creando grafo de la red..."
+	crearGrafo(dict(distinguidos), redes, nodes_connections)
 
 
 
